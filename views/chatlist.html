@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex">
+    <title>ChatList - Kitrak Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="assets/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link href="assets/custom.css" rel="stylesheet" id="bootstrap-css">
+    <script src="assets/jquery-1.10.2.min.js"></script>
+    <script src="assets/bootstrap.min.js"></script>
+    <script src="assets/jquery.cookie.js"></script>
+    <script type="text/javascript">
+      if($.cookie("usercookie")=='' || $.cookie("usercookie")=='undefined' || $.cookie("usercookie")==undefined) {
+          window.location = "/";
+      }
+      $( document ).ready(function() {
+        $('.userName').html($.cookie("namecookie"));
+        $('#logout').click(function(){
+            $.removeCookie("usercookie");
+            $.removeCookie("namecookie");
+            $.removeCookie("sendercookie");
+            $.removeCookie("tokencookie");
+            window.location="/";
+        });
+      });
+    </script>
+</head>
+<body>
+
+<!-- Chat Window -->
+  <div class="chat_window" style="height:100%; width:100%"> 
+    <!-- Header -->
+      
+      <div class="top_menu">
+      <div class="row userInfo">
+        <div class="title col-md-6">Kitrak Chat</div>
+        <div class="col-md-6 pull-right kmenu">
+             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+           <div id="navbar" class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                <li class="active"><a href="profile"><span class="userName"></span> - Profile</a></li>
+                <li><a href="settings">Settings</a></li>
+                <li><a  id="logout">Logout</a></li>
+              </ul>
+          </div>
+        </div>
+      </div>
+       <div class="container" id="tabs">
+        <ul class="nav nav-tabs">
+          <li class="active"><a data-toggle="tab" href="#chats">Chats</a></li>
+          <li><a data-toggle="tab" href="#contacts">Contacts</a></li>
+        </ul>
+      </div>
+    </div>
+    <!-- End of Header -->
+
+    <!-- Messages -->
+    <div class="tab-content messages" style="bottom:0px;">
+        <div id="chats" class="tab-pane fade in active">
+            <ul class="chatsList">
+            </ul>
+        </div>
+        <div id="contacts" class="tab-pane fade">
+          <ul class="contactsList">
+          </ul>
+        </div>
+    </div>
+    <!-- End of Messages -->
+
+  
+  </div>
+<!-- End of Chat Window -->
+
+<script type="text/javascript">
+$(document).ready(function() {
+  var data = {
+          user_id: $.cookie("usercookie"),
+          sender: $.cookie("sendercookie"),
+          token: $.cookie("tokencookie")
+      } 
+
+  // Get Chat History //
+  $.ajax({
+        url: "allchats",
+        method: "POST",
+        data: data
+    }).done(function(results, statusText, xhr) {
+           $.each(results, function( index, value ) {
+            if(value.sender) {
+                $(".chatsList").append('<li class="message left appeared" onclick="gotoChatwith(\''+value.sender._id+'\', \''+value.sender.first_name+'\')"><div class="avatar"></div><div class="text_wrapper"><div class="text">'+value.sender.first_name+' '+value.sender.last_name+'</div></div></li>');
+            } else if(value.receiver)  {
+                $(".chatsList").append('<li class="message left appeared" onclick="gotoChatwith(\''+value.receiver._id+'\', \''+value.receiver.first_name+'\')"><div class="avatar"></div><div class="text_wrapper"><div class="text">'+value.receiver.first_name+' '+value.receiver.last_name+'</div></div></li>');
+            }
+            });
+    }).fail(function(status, xhr) { 
+
+    });
+// End of Chat History //
+
+
+// Get Contacts
+    $.ajax({
+        url: "allcontacts",
+        method: "POST",
+        data: data
+    }).done(function(results, statusText, xhr) {
+          $.each(results, function( index, value ) {
+              $(".contactsList").append('<li class="message left appeared" onclick="gotoChatwith(\''+value._id+'\', \''+value.first_name+'\')"><div class="avatar"></div><div class="text_wrapper"><div class="text">'+value.first_name+' '+value.last_name+'</div></div></li>');
+          });
+    }).fail(function(status, xhr) { 
+
+    });
+// End of Get Contacts
+
+});
+
+function gotoChatwith(receiver,name) {
+  $.cookie("receivercookie", receiver, { expires: 7 });
+  $.cookie("receiverNameCookie", name, { expires: 7 });
+  if($.cookie("receivercookie") > $.cookie("sendercookie")) {
+      $.cookie("chatNodeCookie", $.cookie("sendercookie")+$.cookie("receivercookie"), { expires: 7 });
+  } else {
+      $.cookie("chatNodeCookie", $.cookie("receivercookie")+$.cookie("sendercookie"), { expires: 7 });
+  }
+  window.location = "chat";
+}
+</script>
+
+</body>
+</html>

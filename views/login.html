@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex">
+    <title>Login - Kitrak Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="assets/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link href="assets/custom.css" rel="stylesheet" id="bootstrap-css">
+    <script src="assets/jquery-1.10.2.min.js"></script>
+    <script src="assets/bootstrap.min.js"></script>
+    <script src="assets/jquery.cookie.js"></script>
+    <script type="text/javascript">
+  if($.cookie("usercookie")!='' && $.cookie("usercookie")!='undefined' && $.cookie("usercookie")!=undefined) {
+      window.location = "/chat";
+  }
+  </script>
+</head>
+<body>
+	<div class="chat_window">
+    <div class="top_menu">
+      <div class="buttons">
+        <div class="button close"></div><div class="button minimize"></div><div class="button maximize"></div>
+      </div>
+    <div class="title">Login</div>
+  </div>
+  <div> 
+  <div class="col-sm-6 loginForm">
+      <div class="error-msg alert alert-danger" style="display:none;"></div>
+      <div class="form-group">
+        <label for="email">Username:</label>
+        <input type="username" class="form-control" id="username">
+      </div>
+      <div class="form-group">
+        <label for="pwd">Password:</label>
+        <input type="password" class="form-control" id="pwd">
+      </div>
+      <button type="submit" class="btn btn-default" id="loginAction">Submit</button>
+  </div>  
+  </div>
+
+<script type="text/javascript">
+$(function() {
+  $("#loginAction").click(function(){
+    var data = {
+        username: $("#username").val(),
+        password: $("#pwd").val()
+    }
+    $.ajax({
+        url: "login",
+        method: "POST",
+        data: data
+      }).done(function(data, statusText, xhr) {
+        if(xhr.status==200) {
+          $.cookie("usercookie", data[0].data['user_id'], { expires: 7 });
+          $.cookie("namecookie", data[0].data['first_name'], { expires: 7 });
+          $.cookie("sendercookie", data[0].data['_id'], { expires: 7 }); // Sample 2
+          $.cookie("tokencookie", data[0].data['token'], { expires: 7 });
+          window.location = "chatlist";
+        } else {
+          $('.error-msg').html(data[0].msg);
+          $('.error-msg').show();
+        }
+      }).fail(function(status, xhr) {  
+    });
+  });
+});
+</script>
+</body>
+</html>

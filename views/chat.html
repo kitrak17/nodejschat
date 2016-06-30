@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex">
+    <title>Chat - Kitrak Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="assets/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link href="assets/custom.css" rel="stylesheet" id="bootstrap-css">
+    <script src="assets/jquery-1.10.2.min.js"></script>
+    <script src="assets/bootstrap.min.js"></script>
+    <script src="assets/jquery.cookie.js"></script>
+    <script type="text/javascript">
+      if($.cookie("usercookie")=='' || $.cookie("usercookie")=='undefined' || $.cookie("usercookie")==undefined) {
+          window.location = "/";
+      }
+      $( document ).ready(function() {
+        $('.userName').html($.cookie("namecookie"));
+        $('.chatTitle').html($.cookie("receiverNameCookie"));
+        $('#logout').click(function(){
+            $.removeCookie("usercookie");
+            $.removeCookie("namecookie");
+            $.removeCookie("sendercookie");
+            $.removeCookie("tokencookie");
+            window.location="/";
+        });
+      });
+    </script>
+</head>
+<body>
+
+<!-- Chat Window -->
+  <div class="chat_window" style="height:100%; width:100%">
+    <!-- Header -->
+     <div class="top_menu">
+      <div class="row userInfo">
+        <div class="title col-md-6">Kitrak Chat</div>
+        <div class="col-md-6 pull-right kmenu">
+             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+           <div id="navbar" class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                <li class="active"><a href="profile"><span class="userName"></span> - Profile</a></li>
+                <li><a href="settings">Settings</a></li>
+                <li><a  id="logout">Logout</a></li>
+              </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="buttons col-md-6">
+            <a href="chatlist"><div class="glyphicon glyphicon-chevron-left"></div></a>
+          </div>
+        <div class="title chatTitle col-md-6"></div>
+      </div>
+    </div>
+    <!-- End of Header -->
+
+    <!-- Messages -->
+    <ul class="messages"></ul>
+    <!-- End of Messages -->
+
+    <!--Input Message -->
+     <div class="bottom_wrapper clearfix">
+        <div class="message_input_wrapper col-sm-10">
+          <textarea class="message_input" placeholder="Type your message here..."></textarea>
+        </div>
+        <div class="send_message col-sm-2">
+          <div class="text glyphicon glyphicon-send"></div>
+        </div>
+      </div>
+      <!-- End of Input Message -->
+  </div>
+<!-- End of Chat Window -->
+
+
+<script src="assets/custom.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  var data = {
+          sender: $.cookie("sendercookie"),
+          user_id: $.cookie("usercookie"),
+          receiver: $.cookie("receivercookie"),
+          token: $.cookie("tokencookie")
+      } 
+  $.ajax({
+        url: "allmessages",
+        method: "POST",
+        data: data
+    }).done(function(results, statusText, xhr) {
+          $('.messages').css('opacity',0);
+          $.each(results[0].data, function( index, value ) {
+            if(value.sender==$.cookie("sendercookie")) {
+              $(".messages").append('<li class="message right appeared"><div class="avatar"></div><div class="text_wrapper"><div class="text">'+value.message+'</div></div></li>');
+            } else if(value.sender==$.cookie("receivercookie")) {
+              $(".messages").append('<li class="message left appeared"><div class="avatar"></div><div class="text_wrapper"><div class="text">'+value.message+'</div></div></li>');
+            }
+            });
+            $('.messages').scrollTop($('.messages')[0].scrollHeight);
+            $('.messages').css('opacity',1);
+    }).fail(function(status, xhr) {
+
+    });
+});
+</script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io('');
+</script>
+
+</body>
+</html>
